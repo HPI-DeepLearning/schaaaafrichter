@@ -10,7 +10,8 @@ from PIL import Image, ImageTk
 
 class Generator:
     def __init__(self, output, search_path=None):
-        self.stamps = []
+        self.test_stamps = []
+        self.train_stamps = []
         self.output = output
         self.search_path = search_path
         os.makedirs(self.output, exist_ok=True)
@@ -19,10 +20,15 @@ class Generator:
         self.train_info = []
         self.test_info = []
 
-    def load_stamps(self, stamps):
-        self.stamps = []
+    def load_test_stamps(self, stamps):
+        self.test_stamps = []
         for stamp_path in stamps:
-            self.stamps.append(Image.open(stamp_path))
+            self.test_stamps.append(Image.open(stamp_path))
+
+    def load_train_stamps(self, stamps):
+        self.train_stamps = []
+        for stamp_path in stamps:
+            self.train_stamps.append(Image.open(stamp_path))
 
     def get_data_for(self, image_path):
         file, _ = os.path.splitext(os.path.basename(image_path))
@@ -44,16 +50,18 @@ class Generator:
 
         bounding_boxes = self.get_data_for(image_path)
 
+        stamps = self.test_stamps if is_test else self.train_stamps
+
         for bounding_box in bounding_boxes:
-            for stamp in self.stamps:
+            for stamp in stamps:
                 self.make_image(image, is_test, [bounding_box], [stamp])
 
         for nr_bboxes in range(2, min(len(bounding_boxes), 4)):
             bboxes = random.sample(bounding_boxes, nr_bboxes)
-            stamps = []
+            stamps_to_use = []
             for i in range(len(bboxes)):
-                stamps.append(random.choice(self.stamps))
-            self.make_image(image, is_test, bboxes, stamps)
+                stamps_to_use.append(random.choice(stamps))
+            self.make_image(image, is_test, bboxes, stamps_to_use)
 
     def make_image(self, image, is_test, bounding_boxes=[], stamps=[]):
         output_path = self.get_next_output_path()
@@ -99,7 +107,8 @@ def main(args):
     random.shuffle(is_test)
 
     generator = Generator(args.output, args.search_path)
-    generator.load_stamps(args.stamps)
+    generator.load_test_stamps(args.test_stamps)
+    generator.load_train_stamps(args.train_stamps)
 
     for i, image_path in enumerate(tqdm(args.image)):
         generator.process_image(image_path, is_test[i])
@@ -110,7 +119,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser("Paste a number of images into other images with bounding boxes")
     parser.add_argument("image", nargs="+", help="image files to paste into")
     parser.add_argument("--search-path", default=None, help="path to search for corresponding json files")
-    parser.add_argument("--stamps", default=["sheep.png"], nargs="+", help="path to search for images to paste")
+    parser.add_argument("--test-stamps", required=True, nargs="+", help="path to search for images to paste")
+    parser.add_argument("--train-stamps", required=True, nargs="+", help="path to search for images to paste")
     parser.add_argument("--output", default="output", help="output directory")
     parser.add_argument("--split", default=0.2, help="define percentage of images in test data")
 
