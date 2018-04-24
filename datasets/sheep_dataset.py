@@ -25,10 +25,12 @@ class SheepDataset(GetterDataset):
     def __len__(self):
         return len(self.data)
 
-    def get_image(self, i):
+    def get_image(self, i, do_resize=True):
         image_path = os.path.join(self.dataset_root, self.data[i]['image'])
         with Image.open(image_path) as image:
-            image = image.resize(self.image_size).convert('RGB')
+            if do_resize:
+                image = image.resize(self.image_size)
+            image = image.convert('RGB')
             img = np.array(image, dtype=np.float32)
 
         return img.transpose((2, 0, 1))

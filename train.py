@@ -27,6 +27,8 @@ from chainercv.links.model.ssd import random_distort
 from chainercv.links.model.ssd import resize_with_random_interpolation
 
 from datasets.sheep_dataset import SheepDataset
+from insights.bbox_plotter import BBOXPlotter
+from iterators.thread_iterator import ThreadIterator
 
 
 class MultiboxTrainChain(chainer.Chain):
@@ -148,7 +150,7 @@ def main():
             SheepDataset(args.dataset_root, args.dataset, image_size=image_size),
         ),
         Transform(model.coder, model.insize, model.mean))
-    train_iter = chainer.iterators.MultiprocessIterator(train, args.batchsize)
+    train_iter = ThreadIterator(train, args.batchsize)
 
     test = SheepDataset(args.dataset_root, args.test_dataset, image_size=image_size)
     test_iter = chainer.iterators.SerialIterator(
@@ -187,6 +189,14 @@ def main():
     trainer.extend(
         extensions.snapshot_object(model, 'model_iter_{.updater.iteration}'),
         trigger=(120000, 'iteration'))
+
+    plot_image = test.get_image(0, do_resize=False)
+    bbox_plotter = BBOXPlotter(
+        plot_image,
+        os.path.join(args.out, 'bboxes'),
+        send_bboxes=True,
+    )
+    trainer.extend(bbox_plotter, trigger=(10, 'iteration'))
 
     if args.resume:
         serializers.load_npz(args.resume, trainer)
