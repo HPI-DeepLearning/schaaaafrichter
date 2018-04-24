@@ -60,7 +60,7 @@ class Generator:
         output_path = self.get_next_output_path()
 
         target_info = self.test_info if is_test else self.train_info
-        target_info.append({"image": output_path, "bounding_boxes": bounding_boxes})
+        target_info.append({"image": output_path, "bounding_boxes": [[x[1], x[0], x[3], x[2]] for x in bounding_boxes]})
 
         out = image
 
