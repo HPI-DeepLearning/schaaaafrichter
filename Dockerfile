@@ -55,6 +55,13 @@ RUN wget https://github.com/opencv/opencv/archive/${OPENCV_VERSION}.zip \
 && rm /${OPENCV_VERSION}.zip \
 && rm -r /opencv-${OPENCV_VERSION}
 
+# install ssd vgg model
+WORKDIR /root/.chainer/dataset/_dl_cache/286b14d9978d61e62eece136d00359e5
+RUN wget https://github.com/yuyu2172/share-weights/releases/download/0.0.3/ssd_vgg16_imagenet_2017_06_09.npz
+
+WORKDIR /root/.chainer/dataset/pfnet/chainercv/models/
+RUN cp /root/.chainer/dataset/_dl_cache/286b14d9978d61e62eece136d00359e5/ssd_vgg16_imagenet_2017_06_09.npz .
+
 # Set the working directory to /app
 WORKDIR /app
 
