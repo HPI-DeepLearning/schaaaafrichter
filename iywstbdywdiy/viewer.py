@@ -30,7 +30,7 @@ class Rect():
 
 
 class Viewer(tk.Frame):
-    def __init__(self, master = None, canvas_size = 1632, stretch = True, row = 0, column = 0, rowspan = 1, columnspan = 1):
+    def __init__(self, master=None, canvas_size=1632, stretch=True, row=0, column=0, rowspan=1, columnspan=1):
         tk.Frame.__init__(self, master)
 
         self.canvas_size = (canvas_size, canvas_size // 16 * 10)
@@ -39,7 +39,7 @@ class Viewer(tk.Frame):
 
         self.rectangles = []
 
-        self.grid(padx = 2, pady = 2, row = row, column = column, rowspan = rowspan, columnspan = columnspan)
+        self.grid(padx=2, pady=2, row=row, column=column, rowspan=rowspan, columnspan=columnspan)
         self.create_canvas()
         self.bind_all("<Right>", self.on_right_pressed)
         self.bind_all("<Left>", self.on_left_pressed)
@@ -52,14 +52,14 @@ class Viewer(tk.Frame):
 
         self.path = None
 
-    def make_frame(self, row = 0, column = 0, rowspan = 1, columnspan = 1):
-        frame = tk.Frame(self, borderwidth = 3, relief = "ridge")
-        frame.grid(row = row, column = column, rowspan = rowspan, columnspan = columnspan, padx = 2, pady = 2, sticky = tk.E + tk.W + tk.S + tk.N)
+    def make_frame(self, row=0, column=0, rowspan=1, columnspan=1):
+        frame = tk.Frame(self, borderwidth=3, relief="ridge")
+        frame.grid(row=row, column=column, rowspan=rowspan, columnspan=columnspan, padx=2, pady=2, sticky=tk.E + tk.W + tk.S + tk.N)
         return frame
 
     def create_canvas(self):
-        self.canvas_frame = self.make_frame(row = 3, column = 0, columnspan = 2)
-        self.canvas = tk.Canvas(self.canvas_frame, width = self.canvas_size[0], height = self.canvas_size[1])
+        self.canvas_frame = self.make_frame(row=3, column=0, columnspan=2)
+        self.canvas = tk.Canvas(self.canvas_frame, width=self.canvas_size[0], height=self.canvas_size[1])
         self.canvas.pack(side = tk.BOTTOM)
 
         self.image_on_canvas = None
@@ -122,6 +122,6 @@ class Viewer(tk.Frame):
         self.photo = ImageTk.PhotoImage(image = self.img)
 
         if self.image_on_canvas is None:
-            self.image_on_canvas = self.canvas.create_image(0, 0, image = self.photo, anchor = tk.NW)
+            self.image_on_canvas = self.canvas.create_image(0, 0, image=self.photo, anchor=tk.NW)
         else:
-            self.canvas.itemconfig(self.image_on_canvas, image = self.photo)
+            self.canvas.itemconfig(self.image_on_canvas, image=self.photo)

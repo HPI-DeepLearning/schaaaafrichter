@@ -10,7 +10,7 @@ def main(args):
     viewer.mainloop()
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser("Train a simple neural network")
+    parser = argparse.ArgumentParser("Create simple bounding box annotations for a simple neural network")
     parser.add_argument("image", nargs="+", help="image files to annotate")
 
     main(parser.parse_args())

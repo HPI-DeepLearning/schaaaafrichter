@@ -9,10 +9,10 @@ from PIL import Image, ImageTk
 
 
 class Generator:
-    def __init__(self, output, searchpath=None):
+    def __init__(self, output, search_path=None):
         self.stamps = []
         self.output = output
-        self.searchpath = searchpath
+        self.search_path = search_path
         os.makedirs(self.output, exist_ok=True)
 
         self.i = 0
@@ -29,8 +29,8 @@ class Generator:
         directory = os.path.dirname(image_path)
 
         data_dir = directory
-        if self.searchpath is not None:
-            data_dir = self.searchpath
+        if self.search_path is not None:
+            data_dir = self.search_path
 
         data_file = os.path.join(data_dir, "{}.json".format(file))
 
@@ -44,7 +44,6 @@ class Generator:
 
         bounding_boxes = self.get_data_for(image_path)
 
-        # self.make_image(image, is_test)
         for bounding_box in bounding_boxes:
             for stamp in self.stamps:
                 self.make_image(image, is_test, [bounding_box], [stamp])
@@ -99,7 +98,7 @@ def main(args):
     is_test = [True] * nr_test_images + [False] * (len(args.image) - nr_test_images)
     random.shuffle(is_test)
 
-    generator = Generator(args.output, args.searchpath)
+    generator = Generator(args.output, args.search_path)
     generator.load_stamps(args.stamps)
 
     for i, image_path in enumerate(tqdm(args.image)):
@@ -110,7 +109,7 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("Paste a number of images into other images with bounding boxes")
     parser.add_argument("image", nargs="+", help="image files to paste into")
-    parser.add_argument("--searchpath", default=None, help="path to search for corresponding json files")
+    parser.add_argument("--search-path", default=None, help="path to search for corresponding json files")
     parser.add_argument("--stamps", default=["sheep.png"], nargs="+", help="path to search for images to paste")
     parser.add_argument("--output", default="output", help="output directory")
     parser.add_argument("--split", default=0.2, help="define percentage of images in test data")
