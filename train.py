@@ -5,7 +5,7 @@ import copy
 import numpy as np
 
 import chainer
-from chainer.datasets import ConcatenatedDataset
+from chainer.datasets import ConcatenatedDataset, split_dataset_n_random, split_dataset
 from chainer.datasets import TransformDataset
 from chainer.optimizer_hooks import WeightDecay
 from chainer import serializers
@@ -79,13 +79,19 @@ class Transform(object):
         # 2. Random expansion
         if np.random.randint(2):
             img, param = transforms.random_expand(
-                img, fill=self.mean, return_param=True)
+                img,
+                max_ratio=2,
+                fill=self.mean,
+                return_param=True)
             bbox = transforms.translate_bbox(
                 bbox, y_offset=param['y_offset'], x_offset=param['x_offset'])
 
         # 3. Random cropping
         img, param = random_crop_with_bbox_constraints(
-            img, bbox, return_param=True)
+            img,
+            bbox,
+            return_param=True,
+        )
         bbox, param = transforms.crop_bbox(
             bbox, y_slice=param['y_slice'], x_slice=param['x_slice'],
             allow_outside_center=False, return_param=True)
@@ -117,10 +123,13 @@ def main():
     parser.add_argument(
         '--model', choices=('ssd300', 'ssd512'), default='ssd512')
     parser.add_argument('--batchsize', type=int, default=32)
-    parser.add_argument('--gpu', type=int, default=-1)
+    parser.add_argument('--gpu', type=int, nargs='*', default=[])
     parser.add_argument('--out', default='result')
     parser.add_argument('--resume')
     parser.add_argument('--lr', type=float, default=0.001, help="default learning rate")
+    parser.add_argument('--port', type=int, default=1337, help="port for bbox sending")
+    parser.add_argument('--ip', default='127.0.0.1', help="destination ip for bbox sending")
+    parser.add_argument('--test-image', help="path to test image that shall be displayed in bbox vis")
     args = parser.parse_args()
 
     if args.dataset_root is None:
@@ -141,20 +150,25 @@ def main():
 
     model.use_preset('evaluate')
     train_chain = MultiboxTrainChain(model)
-    if args.gpu >= 0:
-        chainer.cuda.get_device_from_id(args.gpu).use()
-        model.to_gpu()
 
     train = TransformDataset(
-        ConcatenatedDataset(
-            SheepDataset(args.dataset_root, args.dataset, image_size=image_size),
-        ),
-        Transform(model.coder, model.insize, model.mean))
-    train_iter = ThreadIterator(train, args.batchsize)
+        SheepDataset(args.dataset_root, args.dataset, image_size=image_size),
+        Transform(model.coder, model.insize, model.mean)
+    )
+
+    if len(args.gpu) > 1:
+        gpu_datasets = split_dataset_n_random(train, len(args.gpu))
+        if not len(gpu_datasets[0]) == len(gpu_datasets[-1]):
+            adapted_second_split = split_dataset(gpu_datasets[-1], len(gpu_datasets[0]))[0]
+            gpu_datasets[-1] = adapted_second_split
+    else:
+        gpu_datasets = [train]
+
+    train_iter = [ThreadIterator(gpu_dataset, args.batchsize) for gpu_dataset in gpu_datasets]
 
     test = SheepDataset(args.dataset_root, args.test_dataset, image_size=image_size)
-    test_iter = chainer.iterators.SerialIterator(
-        test, args.batchsize, repeat=False, shuffle=False)
+    test_iter = chainer.iterators.MultithreadIterator(
+        test, args.batchsize, repeat=False, shuffle=False, n_threads=2)
 
     # initial lr is set to 1e-3 by ExponentialShift
     optimizer = chainer.optimizers.Adam(alpha=args.lr)
@@ -165,17 +179,26 @@ def main():
         else:
             param.update_rule.add_hook(WeightDecay(0.0005))
 
-    updater = training.updaters.StandardUpdater(
-        train_iter, optimizer, device=args.gpu)
+    if len(args.gpu) <= 1:
+        updater = training.updaters.StandardUpdater(
+            train_iter[0],
+            optimizer,
+            device=args.gpu[0] if len(args.gpu) > 0 else -1,
+        )
+    else:
+        updater = training.updaters.MultiprocessParallelUpdater(
+            train_iter, optimizer, devices=args.gpu)
+        updater.setup_workers()
+
     trainer = training.Trainer(updater, (120000, 'iteration'), args.out)
 
     trainer.extend(
         DetectionVOCEvaluator(
             test_iter, model, use_07_metric=True,
             label_names=voc_bbox_label_names),
-        trigger=(10000, 'iteration'))
+        trigger=(1000, 'iteration'))
 
-    log_interval = 10, 'iteration'
+    log_interval = 100, 'iteration'
     trainer.extend(extensions.LogReport(trigger=log_interval))
     trainer.extend(extensions.observe_lr(), trigger=log_interval)
     trainer.extend(extensions.PrintReport(
@@ -190,11 +213,18 @@ def main():
         extensions.snapshot_object(model, 'model_iter_{.updater.iteration}'),
         trigger=(120000, 'iteration'))
 
-    plot_image = test.get_image(0, do_resize=False)
+    if args.test_image is not None:
+        plot_image = train._dataset.load_image(args.test_image, resize_to=image_size)
+    else:
+        plot_image, _, _ = train.get_example(0)
+        plot_image += train._transform.mean
+
     bbox_plotter = BBOXPlotter(
         plot_image,
         os.path.join(args.out, 'bboxes'),
         send_bboxes=True,
+        upstream_port=args.port,
+        upstream_ip=args.ip,
     )
     trainer.extend(bbox_plotter, trigger=(10, 'iteration'))
 

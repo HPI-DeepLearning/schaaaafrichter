@@ -56,7 +56,7 @@ class BBOXPlotter(Extension):
 
     def __init__(self, image, out_dir, **kwargs):
         super(BBOXPlotter, self).__init__()
-        self.image = image
+        self.image = image.copy()
         self.image_size = Size(height=image.shape[1], width=image.shape[2])
         self.out_dir = out_dir
         os.makedirs(self.out_dir, exist_ok=True)
