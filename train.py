@@ -190,6 +190,10 @@ def main():
             train_iter, optimizer, devices=args.gpu)
         updater.setup_workers()
 
+    if len(args.gpu) > 0 and args.gpu[0] >= 0:
+        chainer.backends.cuda.get_device_from_id(args.gpu[0]).use()
+        model.to_gpu()
+
     trainer = training.Trainer(updater, (120000, 'iteration'), args.out)
 
     trainer.extend(
