@@ -102,26 +102,31 @@ def main(args):
     prev_state = random.getstate()
     random.seed(42)
 
-    nr_test_images = int(args.split * len(args.image))
-    is_test = [True] * nr_test_images + [False] * (len(args.image) - nr_test_images)
+    images = [os.path.join(args.image_folder, i) for i in os.listdir(args.image_folder)]
+
+    nr_test_images = int(args.split * len(images))
+    is_test = [True] * nr_test_images + [False] * (len(images) - nr_test_images)
     random.shuffle(is_test)
 
     generator = Generator(args.output, args.search_path)
     generator.load_test_stamps(args.test_stamps)
     generator.load_train_stamps(args.train_stamps)
 
-    for i, image_path in enumerate(tqdm(args.image)):
+    for i, image_path in enumerate(tqdm(images)):
         generator.process_image(image_path, is_test[i])
 
     random.setstate(prev_state)
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("Paste a number of images into other images with bounding boxes")
-    parser.add_argument("image", nargs="+", help="image files to paste into")
-    parser.add_argument("--search-path", default=None, help="path to search for corresponding json files")
+    parser.add_argument("--image-folder", required=True, help="folder with template image files")
     parser.add_argument("--test-stamps", required=True, nargs="+", help="path to search for images to paste")
     parser.add_argument("--train-stamps", required=True, nargs="+", help="path to search for images to paste")
-    parser.add_argument("--output", default="output", help="output directory")
+    parser.add_argument("--ext", default="jpg", help="extension of image files")
+    parser.add_argument("--search-path", default=None, help="path to search for corresponding json files")
+    parser.add_argument("--output", default="output/images", help="output directory")
+    parser.add_argument("--json-output", default="output", help="folder where json files should appear")
     parser.add_argument("--split", default=0.2, help="define percentage of images in test data")
 
     main(parser.parse_args())
