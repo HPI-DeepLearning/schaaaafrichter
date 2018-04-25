@@ -129,6 +129,7 @@ def main():
     parser.add_argument('--lr', type=float, default=0.001, help="default learning rate")
     parser.add_argument('--port', type=int, default=1337, help="port for bbox sending")
     parser.add_argument('--ip', default='127.0.0.1', help="destination ip for bbox sending")
+    parser.add_argument('--test-image', help="path to test image that shall be displayed in bbox vis")
     args = parser.parse_args()
 
     if args.dataset_root is None:
@@ -216,8 +217,12 @@ def main():
         extensions.snapshot_object(model, 'model_iter_{.updater.iteration}'),
         trigger=(120000, 'iteration'))
 
-    plot_image, _, _ = train.get_example(0)
-    plot_image += train._transform.mean
+    if args.test_image is not None:
+        plot_image = train._dataset.load_image(args.test_image, resize_to=image_size)
+    else:
+        plot_image, _, _ = train.get_example(0)
+        plot_image += train._transform.mean
+
     bbox_plotter = BBOXPlotter(
         plot_image,
         os.path.join(args.out, 'bboxes'),

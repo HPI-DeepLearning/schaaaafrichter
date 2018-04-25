@@ -25,13 +25,18 @@ class SheepDataset(GetterDataset):
     def __len__(self):
         return len(self.data)
 
-    def get_image(self, i):
-        image_path = os.path.join(self.dataset_root, self.data[i]['image'])
+    def load_image(self, image_path, resize_to=None):
         with Image.open(image_path) as image:
+            if resize_to is not None:
+                image = image.resize(resize_to)
             image = image.convert('RGB')
             img = np.array(image, dtype=np.float32)
 
         return img.transpose((2, 0, 1))
+
+    def get_image(self, i):
+        image_path = os.path.join(self.dataset_root, self.data[i]['image'])
+        return self.load_image(image_path)
 
     def get_annotation(self, i):
         bboxes = self.data[i]['bounding_boxes']
