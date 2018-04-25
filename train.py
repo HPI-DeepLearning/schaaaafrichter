@@ -202,8 +202,24 @@ def main():
             label_names=voc_bbox_label_names),
         trigger=(1000, 'iteration'))
 
+    # build logger
+    # make sure to log all data necessary for prediction
     log_interval = 100, 'iteration'
-    trainer.extend(extensions.LogReport(trigger=log_interval))
+    data_to_log = {
+        'image_size': image_size,
+        'model_type': args.model,
+    }
+
+    # add all command line arguments
+    for argument in filter(lambda x: not x.startswith('_'), dir(args)):
+        data_to_log[argument] = getattr(args, argument)
+
+    # create callback that logs all auxiliary data the first time things get logged
+    def backup_train_config(stats_cpu):
+        if stats_cpu['iteration'] == log_interval:
+            stats_cpu.update(data_to_log)
+
+    trainer.extend(extensions.LogReport(trigger=log_interval, postprocess=backup_train_config))
     trainer.extend(extensions.observe_lr(), trigger=log_interval)
     trainer.extend(extensions.PrintReport(
         ['epoch', 'iteration', 'lr',
@@ -212,7 +228,7 @@ def main():
         trigger=log_interval)
     trainer.extend(extensions.ProgressBar(update_interval=10))
 
-    trainer.extend(extensions.snapshot(), trigger=(10000, 'iteration'))
+    trainer.extend(extensions.snapshot(), trigger=(1000, 'iteration'))
     trainer.extend(
         extensions.snapshot_object(model, 'model_iter_{.updater.iteration}'),
         trigger=(120000, 'iteration'))
