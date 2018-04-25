@@ -8,11 +8,12 @@ from PIL import Image
 
 
 class Generator:
-    def __init__(self, output, resize_max=500, search_path=None):
+    def __init__(self, output, resize_max=500, search_path=None, json_path=None):
         self.resize_max = resize_max
         self.test_stamps = []
         self.train_stamps = []
         self.output = output
+        self.json_output = output if json_path is None else json_path
         self.search_path = search_path
         os.makedirs(self.output, exist_ok=True)
 
@@ -67,7 +68,7 @@ class Generator:
         scale_factor = self.resize_max / max(image.size)
 
         new_size = [min(int(round(scale_factor * dim)), self.resize_max) for dim in image.size]
-        image = image.resize(new_size, Image.ANTIALIAS)
+        image = image.resize(new_size, Image.LANCZOS)
 
         output_path = self.get_next_output_path()
 
@@ -88,13 +89,13 @@ class Generator:
             width = x2 - x1
             height = y2 - y1
 
-            resized_to_bb = stamps[i].resize((width, height), Image.ANTIALIAS)
+            resized_to_bb = stamps[i].resize((width, height), Image.LANCZOS)
 
             layer = Image.new("RGBA", image.size, (0, 0, 0, 0))
             layer.paste(resized_to_bb, box=(x1, y1))
             out = Image.alpha_composite(out, layer)
 
-        out.convert("RGB").save(output_path)
+        out.convert("RGB").save(output_path, quality=95)
         self.save_list()
 
     def get_next_output_path(self):
@@ -102,10 +103,10 @@ class Generator:
         return os.path.join(self.output, "{:06d}.jpg".format(self.i - 1))
 
     def save_list(self):
-        with open(os.path.join(self.output, "train_info.json"), "w") as list_file:
+        with open(os.path.join(self.json_output, "train_info.json"), "w") as list_file:
             list_file.write(json.dumps(self.train_info, indent=2))
 
-        with open(os.path.join(self.output, "test_info.json"), "w") as list_file:
+        with open(os.path.join(self.json_output, "test_info.json"), "w") as list_file:
             list_file.write(json.dumps(self.test_info, indent=2))
 
 
@@ -119,7 +120,7 @@ def main(args):
     is_test = [True] * nr_test_images + [False] * (len(images) - nr_test_images)
     random.shuffle(is_test)
 
-    generator = Generator(args.output, args.resize_max, args.search_path)
+    generator = Generator(args.output, args.resize_max, args.search_path, args.json_output)
     generator.load_test_stamps(args.test_stamps)
     generator.load_train_stamps(args.train_stamps)
 
