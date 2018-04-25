@@ -192,10 +192,6 @@ def main():
 
     trainer = training.Trainer(updater, (120000, 'iteration'), args.out)
 
-    # trainer.extend(
-    #     extensions.ExponentialShift('lr', 0.1, init=1e-3),
-    #     trigger=triggers.ManualScheduleTrigger([80000, 100000], 'iteration'))
-
     trainer.extend(
         DetectionVOCEvaluator(
             test_iter, model, use_07_metric=True,
