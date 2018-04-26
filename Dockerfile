@@ -1,5 +1,6 @@
 # Use an official Python runtime as a parent image
-FROM nvidia/cuda:9.1-cudnn7-devel-ubuntu16.04
+ARG FROM_IMAGE=nvidia/cuda:9.1-cudnn7-devel-ubuntu16.04
+FROM ${FROM_IMAGE}
 
 # Install any needed packages specified in requirements.txt
 RUN apt-get update \
@@ -8,23 +9,26 @@ RUN apt-get update \
 
 # install opencv for python 3
 RUN apt-get update && \
-        apt-get install -y \
-        build-essential \
-        cmake \
-        git \
-        wget \
-        unzip \
-        yasm \
-        pkg-config \
-        libswscale-dev \
-        libtbb2 \
-        libtbb-dev \
-        libjpeg-dev \
-        libpng-dev \
-        libtiff-dev \
-        libjasper-dev \
-        libavformat-dev \
-        libpq-dev
+  apt-get install -y \
+  build-essential \
+  cmake \
+  git \
+  libavformat-dev \
+  libcanberra-gtk3-module \
+  libgtk-3-dev \
+  libjasper-dev \
+  libjpeg-dev \
+  libpng-dev \
+  libpq-dev \
+  libswscale-dev \
+  libtbb-dev \
+  libtbb2 \
+  libtiff-dev \
+  pkg-config \
+  pkg-config \
+  unzip \
+  wget \
+  yasm
 
 RUN pip3 install numpy
 
@@ -51,7 +55,7 @@ RUN wget https://github.com/opencv/opencv/archive/${OPENCV_VERSION}.zip \
   -DPYTHON_EXECUTABLE=$(which python3) \
   -DPYTHON_INCLUDE_DIR=$(python3 -c "from distutils.sysconfig import get_python_inc; print(get_python_inc())") \
   -DPYTHON_PACKAGES_PATH=$(python3 -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())") .. \
-&& make install \
+&& make -j $(nproc) install \
 && rm /${OPENCV_VERSION}.zip \
 && rm -r /opencv-${OPENCV_VERSION}
 
