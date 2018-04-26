@@ -52,8 +52,15 @@ if __name__ == "__main__":
                 frame = print_fps(frame, fps)
 
             cv2.imshow('sheeper', frame)
-            if cv2.waitKey(1) == 27:
+            pressed_key = cv2.waitKey(1) & 0xff
+            if pressed_key == 27:
                 break  # quit with ESC
+            elif pressed_key == 171:  # increase with +
+                localizer.score_threshold += 0.05
+                print("setting score threshold to: {:.2}".format(localizer.score_threshold))
+            elif pressed_key == 173:  # decrease with -
+                localizer.score_threshold -= 0.05
+                print("setting score threshold to: {:.2}".format(localizer.score_threshold))
 
     localizer.shutdown()
     cv2.destroyAllWindows()

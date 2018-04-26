@@ -17,11 +17,22 @@ class SheepLocalizer:
         self.gpu_id = gpu_id
         self.input_size = tuple(self.log.get('image_size', (512, 512)))
         self.model_type = self.log.get('model_type', 'ssd512')
+        self._score_threshold = 0.3
         self.model = None
         self.mean = self.log.get('image_mean', _imagenet_mean)
         self.font = cv2.FONT_HERSHEY_SIMPLEX
         self.color = (0, 255, 0)
         self.initialized = False
+
+    @property
+    def score_threshold(self):
+        return self._score_threshold
+
+    @score_threshold.setter
+    def score_threshold(self, value):
+        self._score_threshold = value
+        if self.model is not None:
+            self.model.score_thresh = value
 
     def build_model(self):
         if self.model_type == 'ssd300':
@@ -31,7 +42,7 @@ class SheepLocalizer:
         else:
             raise NotImplementedError("Sheep Localizer is not prepared to work with model {}".format(self.model_type))
 
-        model.score_thresh = 0.3
+        model.score_thresh = self._score_threshold
 
         if self.gpu_id >= 0:
             chainer.backends.cuda.get_device_from_id(self.gpu_id).use()
