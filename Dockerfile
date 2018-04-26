@@ -69,11 +69,11 @@ RUN cp /root/.chainer/dataset/_dl_cache/286b14d9978d61e62eece136d00359e5/ssd_vgg
 # Set the working directory to /app
 WORKDIR /app
 
-ADD requirements.txt /app
+COPY requirements.txt /app
 RUN pip3 install -v --trusted-host pypi.python.org -r requirements.txt
 
 # Copy the current directory contents into the container at /app
-ADD . /app
+COPY . /app
 
 # Define environment variable
 ENV NAME Schaaafrichter

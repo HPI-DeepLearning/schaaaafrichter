@@ -1,7 +1,9 @@
 # schaaaafrichter
 Schaafrichter 2.0
 
-# inference
+## inference
+
+### with the live usb application
 
 Execute this on your host, to allow docker to connect to your X server:
 ```
@@ -29,7 +31,7 @@ docker run \
     sheep
 ```
 
-Inside run something like:
+Inside the docker container run something like:
 ```
-python3 live_sheeping.py data/train_small_images/model_iter_80000 data/train_small_images/log
+python3 live_sheeping.py data/trained_model data/log
 ```
