@@ -8,14 +8,14 @@ from PIL import Image
 
 
 class Generator:
-    def __init__(self, output, resize_max=500, search_path=None, json_path=None):
+    def __init__(self, output_path, resize_max=500, search_path=None, json_path=None):
         self.resize_max = resize_max
         self.test_stamps = []
         self.train_stamps = []
-        self.output = output
-        self.json_output = output if json_path is None else json_path
+        self.output_path = output_path
+        self.json_output_path = output_path if json_path is None else json_path
         self.search_path = search_path
-        os.makedirs(self.output, exist_ok=True)
+        os.makedirs(self.output_path, exist_ok=True)
 
         self.i = 0
         self.train_info = []
@@ -70,13 +70,13 @@ class Generator:
         new_size = [min(int(round(scale_factor * dim)), self.resize_max) for dim in image.size]
         image = image.resize(new_size, Image.LANCZOS)
 
-        output_path = self.get_next_output_path()
+        image_output_path = self.get_next_output_path()
 
         bounding_boxes = [[int(round(x * scale_factor)) for x in bb] for bb in bounding_boxes]
 
         target_info = self.test_info if is_test else self.train_info
         target_info.append({
-            "image": output_path,
+            "image": image_output_path,
             # swap axis for json files
             "bounding_boxes": [[bb[1], bb[0], bb[3], bb[2]] for bb in bounding_boxes]
         })
@@ -95,18 +95,18 @@ class Generator:
             layer.paste(resized_to_bb, box=(x1, y1))
             out = Image.alpha_composite(out, layer)
 
-        out.convert("RGB").save(output_path, quality=95)
+        out.convert("RGB").save(image_output_path, quality=95)
         self.save_list()
 
     def get_next_output_path(self):
         self.i += 1
-        return os.path.join(self.output, "{:06d}.jpg".format(self.i - 1))
+        return os.path.join(self.output_path, "{:06d}.jpg".format(self.i - 1))
 
     def save_list(self):
-        with open(os.path.join(self.json_output, "train_info.json"), "w") as list_file:
+        with open(os.path.join(self.json_output_path, "train_info.json"), "w") as list_file:
             list_file.write(json.dumps(self.train_info, indent=2))
 
-        with open(os.path.join(self.json_output, "test_info.json"), "w") as list_file:
+        with open(os.path.join(self.json_output_path, "test_info.json"), "w") as list_file:
             list_file.write(json.dumps(self.test_info, indent=2))
 
 
@@ -120,7 +120,7 @@ def main(args):
     is_test = [True] * nr_test_images + [False] * (len(images) - nr_test_images)
     random.shuffle(is_test)
 
-    generator = Generator(args.output, args.resize_max, args.search_path, args.json_output)
+    generator = Generator(args.output_path, args.resize_max, args.search_path, args.json_output_path)
     generator.load_test_stamps(args.test_stamps)
     generator.load_train_stamps(args.train_stamps)
 
@@ -131,14 +131,15 @@ def main(args):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser("Paste a number of images into other images with bounding boxes")
+    parser = argparse.ArgumentParser("Paste a number of images into other images with bounding boxes",
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("--image-folder", required=True, help="folder with template image files")
     parser.add_argument("--test-stamps", required=True, nargs="+", help="path to search for images to paste")
     parser.add_argument("--train-stamps", required=True, nargs="+", help="path to search for images to paste")
     parser.add_argument("--ext", default="jpg", help="extension of image files")
     parser.add_argument("--search-path", default=None, help="path to search for corresponding json files")
-    parser.add_argument("--output", default="output/images", help="output directory")
-    parser.add_argument("--json-output", default="output", help="folder where json files should appear")
+    parser.add_argument("--output-path", default="output_path/images", help="output_path directory")
+    parser.add_argument("--json-output-path", default="output_path", help="folder where json files should appear")
     parser.add_argument("--split", default=0.2, help="define percentage of images in test data")
     parser.add_argument("--resize-max", default=500, help="resize the larger image axis to 500 (keeps aspect ratio)")
 
