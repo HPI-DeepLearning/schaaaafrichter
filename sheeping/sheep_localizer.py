@@ -14,14 +14,16 @@ class SheepLocalizer:
         with open(log_file) as the_log_file:
             self.log = json.load(the_log_file)[0]
         self.model_file = model_file
+        self.gpu_id = gpu_id
         self.input_size = tuple(self.log.get('image_size', (512, 512)))
         self.model_type = self.log.get('model_type', 'ssd512')
-        self.model = self.build_model(gpu_id)
+        self.model = None
         self.mean = self.log.get('image_mean', _imagenet_mean)
         self.font = cv2.FONT_HERSHEY_SIMPLEX
         self.color = (0, 255, 0)
+        self.initialized = False
 
-    def build_model(self, gpu_id):
+    def build_model(self):
         if self.model_type == 'ssd300':
             model = SSD300(n_fg_class=1)
         elif self.model_type == 'ssd512':
@@ -31,14 +33,15 @@ class SheepLocalizer:
 
         model.score_thresh = 0.3
 
-        if gpu_id >= 0:
-            chainer.backends.cuda.get_device_from_id(gpu_id).use()
+        if self.gpu_id >= 0:
+            chainer.backends.cuda.get_device_from_id(self.gpu_id).use()
             model.to_gpu()
 
         with np.load(self.model_file) as f:
             chainer.serializers.NpzDeserializer(f).load(model)
 
-        return model
+        self.initialized = True
+        self.model = model
 
     def preprocess(self, image):
         image = image.transpose(2, 0, 1)
@@ -72,6 +75,8 @@ class SheepLocalizer:
         return image
 
     def localize(self, image):
+        if not self.initialized:
+            self.build_model()
         image = self.resize(image)
         input_image = self.preprocess(image.copy())
         bboxes, _, scores = self.model.predict([input_image])
