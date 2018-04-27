@@ -102,7 +102,3 @@ ENV/
 
 # IDEA
 .idea
-
-# our stuff
-data
-result
