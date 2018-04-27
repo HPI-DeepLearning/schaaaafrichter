@@ -2,11 +2,6 @@
 ARG FROM_IMAGE=nvidia/cuda:9.1-cudnn7-devel-ubuntu16.04
 FROM ${FROM_IMAGE}
 
-# Install any needed packages specified in requirements.txt
-RUN apt-get update \
-	&& apt-get install -y git \
-	&& apt-get install -y python3 python3-pip
-
 # install opencv for python 3
 RUN apt-get update && \
   apt-get install -y \
@@ -25,12 +20,12 @@ RUN apt-get update && \
   libtbb2 \
   libtiff-dev \
   pkg-config \
-  pkg-config \
+  python3 \
+  python3-numpy \
+  python3-pip \
   unzip \
   wget \
   yasm
-
-RUN pip3 install numpy
 
 WORKDIR /
 ENV OPENCV_VERSION="3.4.1"
@@ -61,10 +56,9 @@ RUN wget https://github.com/opencv/opencv/archive/${OPENCV_VERSION}.zip \
 
 # install ssd vgg model
 WORKDIR /root/.chainer/dataset/_dl_cache/286b14d9978d61e62eece136d00359e5
-RUN wget https://github.com/yuyu2172/share-weights/releases/download/0.0.3/ssd_vgg16_imagenet_2017_06_09.npz
-
-WORKDIR /root/.chainer/dataset/pfnet/chainercv/models/
-RUN cp /root/.chainer/dataset/_dl_cache/286b14d9978d61e62eece136d00359e5/ssd_vgg16_imagenet_2017_06_09.npz .
+RUN wget https://github.com/yuyu2172/share-weights/releases/download/0.0.3/ssd_vgg16_imagenet_2017_06_09.npz \
+&& mkdir -p /root/.chainer/dataset/pfnet/chainercv/models \
+&& cp /root/.chainer/dataset/_dl_cache/286b14d9978d61e62eece136d00359e5/ssd_vgg16_imagenet_2017_06_09.npz /root/.chainer/dataset/pfnet/chainercv/models
 
 # Set the working directory to /app
 WORKDIR /app
