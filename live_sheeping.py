@@ -11,10 +11,10 @@ FPS_FONT = cv2.FONT_HERSHEY_SIMPLEX
 
 def print_fps(image, fps):
     image_height, image_width, _ = image.shape
-    fps_text = "{fps:.2} FPS".format(fps=fps)
-    text_size = cv2.getTextSize(fps_text, FPS_FONT, 1, 1)[0]
+    fps_text = "{fps:.2f} FPS".format(fps=fps)
+    text_size = cv2.getTextSize(fps_text, FPS_FONT, 0.8, 1)[0]
     text_start = image_width - text_size[0], text_size[1]
-    cv2.putText(image, fps_text, text_start, FPS_FONT, 1, (0, 255, 0), bottomLeftOrigin=False)
+    cv2.putText(image, fps_text, text_start, FPS_FONT, 0.8, (0, 255, 0), bottomLeftOrigin=False)
     return image
 
 
