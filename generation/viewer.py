@@ -30,8 +30,10 @@ class Rect():
 
 
 class Viewer(tk.Frame):
-    def __init__(self, master=None, canvas_size=1632, stretch=True, row=0, column=0, rowspan=1, columnspan=1):
+    def __init__(self, output_folder, master=None, canvas_size=1632, stretch=True, row=0, column=0, rowspan=1, columnspan=1):
         tk.Frame.__init__(self, master)
+
+        self.output_folder = output_folder
 
         self.canvas_size = (canvas_size, canvas_size // 16 * 10)
         self.stretch = stretch
@@ -94,8 +96,10 @@ class Viewer(tk.Frame):
         if self.path is None:
             return
 
-        base, ext = os.path.splitext(self.path)
-        out_path = base + ".json"
+        os.makedirs(self.output_folder, exist_ok=True)
+
+        base, ext = os.path.splitext(os.path.basename(self.path))
+        out_path = os.path.join(self.output_folder, "{}.json".format(base))
         with open(out_path, "w") as out_handle:
             out_handle.write(json.dumps([[y * self.stretch_factor for y in x.coords] for x in self.rectangles]))
         for x in self.rectangles:
