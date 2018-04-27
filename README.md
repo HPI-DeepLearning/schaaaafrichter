@@ -5,7 +5,7 @@ Now with Advanced AI-Technolgies!
 
 ## Installation
 
-You can go the hard way:
+You can go the system way:
 
 1. Make sure to install `Python 3` on your device
    - Windows: Get it [here](https://www.python.org/downloads/windows/)
@@ -13,21 +13,17 @@ You can go the hard way:
    your favourite package manager
    - Linux: Use your favourite package manager i.e. `pacman -S python` or
    `apt install python3`
-2. Install `Opencv` for Python 3
-   - if your package manager has such a version you can just install it (e.g. `pacman -S opencv`)
-   - otherwise you will need to build it by yourself. You may want to follow
-   a guide like [this guide](https://www.pyimagesearch.com/2015/07/20/install-opencv-3-0-and-python-3-4-on-ubuntu/).
 3. Create a virtualenvironment
    - you can do so with `python3 -m venv --system-site-packages <path to virtualenv>`
    - If you are using Linux, we recommend that you install
    [virtualenvwrapper](https://virtualenvwrapper.readthedocs.io/en/latest/)
-   and organize all virtualenvironments with this tool, its quite neat.
+   and organize all virtual environments with this tool, its quite neat.
    - **INFO:** Make sure to include the global site-packages that contain `Opencv` (make sure to use `--system-site-packages`)!
-4. Load the virtualenvironment
+4. Load the virtual environment
 5. Clone the repository
 6. Install all necessary libraries with `pip install -r requirements.txt`
 
-You can also go the easier way:
+You can also go the docker way:
 
 1. Install `Docker`
    - Windows: Get it [here](https://www.docker.com/community-edition)
@@ -95,6 +91,8 @@ nvidia-docker run \
     sheep
 ```
 **Note:** `/absolute/path/to/data` id the path to the directory with your trained model and the log file.
+You can also use: `--volume "$( readlink data -f )":/app/data`, but that does not work on Windows.
+
 
 **Known errors**
 
