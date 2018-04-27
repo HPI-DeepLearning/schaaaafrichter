@@ -114,7 +114,7 @@ def main(args):
     prev_state = random.getstate()
     random.seed(42)
 
-    images = [os.path.join(args.image_folder, i) for i in os.listdir(args.image_folder)]
+    images = [os.path.join(args.image_folder, i) for i in sorted(os.listdir(args.image_folder))]
 
     nr_test_images = int(args.split * len(images))
     is_test = [True] * nr_test_images + [False] * (len(images) - nr_test_images)
@@ -138,8 +138,8 @@ if __name__ == "__main__":
     parser.add_argument("--train-stamps", required=True, nargs="+", help="path to search for images to paste")
     parser.add_argument("--ext", default="jpg", help="extension of image files")
     parser.add_argument("--search-path", default=None, help="path to search for corresponding json files")
-    parser.add_argument("--output-path", default="output_path/images", help="output_path directory")
-    parser.add_argument("--json-output-path", default="output_path", help="folder where json files should appear")
+    parser.add_argument("--output-path", default="data/generated/images", help="output_path directory")
+    parser.add_argument("--json-output-path", default="data/generated", help="folder where json files should appear")
     parser.add_argument("--split", default=0.2, help="define percentage of images in test data")
     parser.add_argument("--resize-max", default=500, help="resize the larger image axis to 500 (keeps aspect ratio)")
 
