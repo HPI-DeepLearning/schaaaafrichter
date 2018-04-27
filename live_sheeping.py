@@ -4,6 +4,7 @@ import queue
 import cv2
 
 from sheeping.asynchronous_sheep_localizer import AsynchronousSheepLocalizer
+from sheeping.audio_renderer import Baaaer
 from sheeping.camera import Camera
 
 FPS_FONT = cv2.FONT_HERSHEY_SIMPLEX
@@ -31,36 +32,44 @@ if __name__ == "__main__":
     localizer = AsynchronousSheepLocalizer(args.model_file, args.log_file, args.gpu)
     localizer.start_localization_worker()
 
+    baaaer = Baaaer()
+
     bboxes = scores = fps = None
-    with camera:
-        while True:
-            frame = camera.get_frame()
-            frame = cv2.flip(frame, 1)
-            frame = localizer.resize(frame)
-            try:
-                localizer.localization_queue.put_nowait(frame)
-            except queue.Full:
-                pass
+    try:
+        with camera:
+            while True:
+                frame = camera.get_frame()
+                frame = cv2.flip(frame, 1)
+                frame = localizer.resize(frame)
+                try:
+                    localizer.localization_queue.put_nowait(frame)
+                except queue.Full:
+                    pass
 
-            try:
-                bboxes, scores, fps = localizer.image_queue.get_nowait()
-            except queue.Empty:
-                pass
+                try:
+                    bboxes, scores, fps = localizer.image_queue.get_nowait()
+                    if len(bboxes) > 0:
+                        baaaer.baaa()
+                except queue.Empty:
+                    pass
 
-            if bboxes is not None:
-                frame = localizer.visualize_results(frame, bboxes, scores)
-                frame = print_fps(frame, fps)
+                if bboxes is not None:
+                    frame = localizer.visualize_results(frame, bboxes, scores)
+                    frame = print_fps(frame, fps)
 
-            cv2.imshow('sheeper', frame)
-            pressed_key = cv2.waitKey(1) & 0xff
-            if pressed_key == 27:
-                break  # quit with ESC
-            elif pressed_key == 171:  # increase with +
-                localizer.score_threshold += 0.05
-                print("setting score threshold to: {:.2}".format(localizer.score_threshold))
-            elif pressed_key == 173:  # decrease with -
-                localizer.score_threshold -= 0.05
-                print("setting score threshold to: {:.2}".format(localizer.score_threshold))
-
-    localizer.shutdown()
-    cv2.destroyAllWindows()
+                cv2.imshow('sheeper', frame)
+                pressed_key = cv2.waitKey(1) & 0xff
+                if pressed_key == 27:
+                    break  # quit with ESC
+                elif pressed_key == 171:  # increase with +
+                    localizer.score_threshold += 0.05
+                    print("setting score threshold to: {:.2}".format(localizer.score_threshold))
+                elif pressed_key == 173:  # decrease with -
+                    localizer.score_threshold -= 0.05
+                    print("setting score threshold to: {:.2}".format(localizer.score_threshold))
+                elif pressed_key == ord('b'):  # toggle baa sound with b
+                    baaaer.enabled = not baaaer.enabled
+    finally:
+        baaaer.shutdown()
+        localizer.shutdown()
+        cv2.destroyAllWindows()

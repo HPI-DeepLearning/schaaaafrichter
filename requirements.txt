@@ -4,3 +4,4 @@ numpy
 cupy
 chainer
 chainercv
+simpleaudio
