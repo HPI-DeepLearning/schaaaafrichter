@@ -79,11 +79,12 @@ class SheepLocalizer:
 
             cv2.rectangle(image, (bbox[1], bbox[0]), (bbox[1] + width, bbox[0] + height), self.color)
 
-            text_size = cv2.getTextSize(str(score), self.font, self.font_scale, 1)[0]
+            score_text = format(float(score), ".2f")
+            text_size = cv2.getTextSize(score_text, self.font, self.font_scale, 1)[0]
             text_start = bbox[1] + width - text_size[0], bbox[0] + text_size[1]
             text_end = bbox[1] + width, bbox[0]
             cv2.rectangle(image, text_start, text_end, self.color, -1)
-            cv2.putText(image, str(score), text_start, self.font, self.font_scale, (255, 255, 255), bottomLeftOrigin=False)
+            cv2.putText(image, score_text, text_start, self.font, self.font_scale, (255, 255, 255), bottomLeftOrigin=False)
         return image
 
     def localize(self, image):
