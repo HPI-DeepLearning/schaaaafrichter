@@ -1,11 +1,10 @@
 import argparse
-import time
+import queue
 
 import cv2
 
+from sheeping.asynchronous_sheep_localizer import AsynchronousSheepLocalizer
 from sheeping.camera import Camera
-from sheeping.sheep_localizer import SheepLocalizer
-
 
 FPS_FONT = cv2.FONT_HERSHEY_SIMPLEX
 
@@ -29,19 +28,32 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     camera = Camera(camera_id=args.camera)
-    localizer = SheepLocalizer(args.model_file, args.log_file, args.gpu)
+    localizer = AsynchronousSheepLocalizer(args.model_file, args.log_file, args.gpu)
+    localizer.start_localization_worker()
 
+    bboxes = scores = fps = None
     with camera:
         while True:
             frame = camera.get_frame()
             frame = cv2.flip(frame, 1)
-            start_time = time.time()
-            frame = localizer.localize(frame)
-            end_time = time.time()
-            fps = 1.0 / (end_time - start_time)
-            frame = print_fps(frame, fps)
+            frame = localizer.resize(frame)
+            try:
+                localizer.localization_queue.put_nowait(frame)
+            except queue.Full:
+                pass
+
+            try:
+                bboxes, scores, fps = localizer.image_queue.get_nowait()
+            except queue.Empty:
+                pass
+
+            if bboxes is not None:
+                frame = localizer.visualize_results(frame, bboxes, scores)
+                frame = print_fps(frame, fps)
+
             cv2.imshow('sheeper', frame)
             if cv2.waitKey(1) == 27:
                 break  # quit with ESC
 
+    localizer.shutdown()
     cv2.destroyAllWindows()
