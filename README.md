@@ -5,7 +5,7 @@ Schaafrichter 2.0
 
 ### with the live usb application
 
-Execute this on your host, to allow docker to connect to your X server:
+Execute this on your host, to allow docker to connect to your X server (needs to be done after every system restart):
 ```
 xhost +local:docker
 ```
@@ -21,10 +21,10 @@ docker build -t sheep --build-arg FROM_IMAGE=nvidia/cuda:8.0-cudnn6-devel-ubuntu
 ```
 Afterwards run the container:
 ```
-docker run \
+nvidia-docker run \
     --rm \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
-    -e DISPLAY \
+    -e DISPLAY=$DISPLAY \
     --device=/dev/video0:/dev/video0 \
     -it \
     --volume /absolute/path/to/data:/app/data \
@@ -34,4 +34,15 @@ docker run \
 Inside the docker container run something like:
 ```
 python3 live_sheeping.py data/trained_model data/log
+```
+
+#### Known errors
+
+If you receive an error similar to this one, you need to execute `xhost +local:docker`:
+```
+No protocol specified
+Failed to connect to Mir: Failed to connect to server socket: No such file or directory
+Unable to init server: Could not connect: Connection refused
+
+(sheeper:1): Gtk-WARNING **: cannot open display: :1
 ```
