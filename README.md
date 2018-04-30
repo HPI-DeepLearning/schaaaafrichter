@@ -86,9 +86,8 @@ Once you started the training, grab a coffee/tea and enjoy the rest of your day.
 
 Once you got a trained model, you can do inference and have fun!
 
-### with the live usb application
-
 #### Using Docker
+
 Execute this on your host, to allow docker to connect to your X server (needs to be done after every system restart):
 ```
 xhost +local:docker
