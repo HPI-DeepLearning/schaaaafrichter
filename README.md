@@ -5,7 +5,10 @@ Now with Advanced AI-Technolgies!
 
 ## Installation
 
-You can go the system way:
+You can build the project with or without support for a CUDA capable GPU. Steps only applicable to either one will be denoted with **With GPU**/**CPU only**.
+Also you can either install this [in your own system](#install-on-system), or [use a docker image instead](#install-with-docker).
+
+### Install on System
 
 1. Make sure to install `Python 3` on your device
    - Windows: Get it [here](https://www.python.org/downloads/windows/)
@@ -13,6 +16,9 @@ You can go the system way:
    your favourite package manager
    - Linux: Use your favourite package manager i.e. `pacman -S python` or
    `apt install python3`
+2. **With GPU**:
+   - install `CUDA`
+   - install `cudnn`
 3. Create a virtualenvironment
    - you can do so with `python3 -m venv --system-site-packages <path to virtualenv>`
    - If you are using Linux, we recommend that you install
@@ -22,32 +28,35 @@ You can go the system way:
 4. Load the virtual environment
 5. Clone the repository
 6. *For Ubuntu*: Install header files for alsa: `apt install libasound2-dev`
-7. Install all necessary libraries with `pip install -r requirements.txt`
+7. Install all necessary libraries:
+   - **With GPU:** `pip install -r requirements.txt`
+   - **CPU only:** `pip install -r requirements_cpu.txt`
 
-You can also go the docker way:
+### Install with Docker
 
 1. Install `Docker`
    - Windows: Get it [here](https://www.docker.com/community-edition)
    - Mac: Get it [here](https://www.docker.com/community-edition)
-   - Linux: User your favourite package manager i.e. `pacman -S docker`
+   - Linux: User your favourite package manager i.e. `pacman -S docker`, or use [this guide](https://docs.docker.com/install/linux/docker-ce/ubuntu/) for Ubuntu.
    or `apt install docker`
-2. In case your device has a CUDA capable GPU, you should do the following:
+2. **With GPU**: In case your device has a CUDA capable GPU, you should do the following:
    - install `CUDA`
    - install `cudnn`
    - install `nvidia-docker` ([Ubuntu](https://gist.github.com/dsdenes/d9c66361df96bce3fca8f1414bb14bce),
   [Arch Like OS](https://aur.archlinux.org/packages/nvidia-docker2/))
 3. Build the Docker Image:
+   - **CPU only**:
+   ```
+   docker build -t sheep --build-arg FROM_IMAGE=ubuntu:16.04 --build-arg CPU_ONLY=true .
+   ```
+   - **With GPU**:
    ```
    docker build -t sheep .
    ```
-   - If your host system uses CUDA with a version earlier than 9.1, specify the corresponding docker image to match the configuration of your machine (see [this list](https://hub.docker.com/r/nvidia/cuda/) for available options).
+   If your host system uses CUDA with a version earlier than 9.1, specify the corresponding docker image to match the configuration of your machine (see [this list](https://hub.docker.com/r/nvidia/cuda/) for available options).
    For example, for CUDA 8 and CUDNN 6 use the following instead:
    ```
    docker build -t sheep --build-arg FROM_IMAGE=nvidia/cuda:8.0-cudnn6-devel-ubuntu16.04 .
-   ```
-   Without CUDA use this instead:
-   ```
-   docker build -t sheep --build-arg FROM_IMAGE=ubuntu:16.04 --build-arg CPU_ONLY=true .
    ```
 
 ## Training
