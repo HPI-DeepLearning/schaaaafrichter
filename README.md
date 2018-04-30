@@ -45,6 +45,10 @@ You can also go the docker way:
    ```
    docker build -t sheep --build-arg FROM_IMAGE=nvidia/cuda:8.0-cudnn6-devel-ubuntu16.04 .
    ```
+   Without CUDA use this instead:
+   ```
+   docker build -t sheep --build-arg FROM_IMAGE=ubuntu:16.04 --build-arg CPU_ONLY=true .
+   ```
 
 ## Training
 
