@@ -39,7 +39,6 @@ Also you can either install this [in your own system](#install-on-system), or [u
    - Windows: Get it [here](https://www.docker.com/community-edition)
    - Mac: Get it [here](https://www.docker.com/community-edition)
    - Linux: User your favourite package manager i.e. `pacman -S docker`, or use [this guide](https://docs.docker.com/install/linux/docker-ce/ubuntu/) for Ubuntu.
-   or `apt install docker`
 2. **GPU Support:** In case your device has a CUDA capable GPU, you should do the following:
    - install `CUDA`
    - install `cudnn`
@@ -119,7 +118,7 @@ Unable to init server: Could not connect: Connection refused
 (sheeper:1): Gtk-WARNING **: cannot open display: :1
 ```
 
-#### Using Docker and Virtualenv
+**Running the script**
 
 Run something like:
 ```
