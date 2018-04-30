@@ -21,7 +21,8 @@ You can go the system way:
    - **INFO:** Make sure to include the global site-packages that contain `Opencv` (make sure to use `--system-site-packages`)!
 4. Load the virtual environment
 5. Clone the repository
-6. Install all necessary libraries with `pip install -r requirements.txt`
+6. *For Ubuntu*: Install header files for alsa: `apt install libasound2-dev`
+7. Install all necessary libraries with `pip install -r requirements.txt`
 
 You can also go the docker way:
 
@@ -59,7 +60,7 @@ We will now quickly go over all possible command-line arguments you can/have to 
 - `--dataset-root` specify a dataset root dir that might be different from the directory of the dataset file locations, which is used as default.
 - `--model` available choices are `ssd300` and `ssd512`, you can choose which kind of model you want to train. Default is `ssd512`.
 - `--batchsize` the batch size to use for training. Default is `32`.
-- `--gpu` which gpu to use. You can also give more than one gpu id. The model will then be trained in data parallel fashion. Default is `-1`, which means run on CPU.
+- `--gpu` which gpu to use (e.g. `0` means your first gpu). You can also give more than one gpu id. The model will then be trained in data parallel fashion. Default is `-1`, which means run on CPU.
 - `--out` specifies the output directory for the trained model and log. Default is `result`
 - `--resume` specify a `trainer_snapshot` and continue training.
 - `--lr` set the default learning rate for the optimizer. Default is `1e-3`.
@@ -110,7 +111,10 @@ Unable to init server: Could not connect: Connection refused
 
 Run something like:
 ```
-python3 live_sheeping.py data/trained_model data/log
+python3 live_sheeping.py data/models/trained_model data/models/log
 ```
-You can also run on a gpu with `--gpu <gpu_id>`
+You can also run on a gpu with `--gpu <gpu_id>`.
 
+To generate predictions for static images instead (you can add `--gpu <gpu_id>` again):
+
+`python image_sheeping.py data/models/trained_model data/models/log -j data/generated/test_info.json`
