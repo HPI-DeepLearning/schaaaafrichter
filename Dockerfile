@@ -8,6 +8,7 @@ RUN apt-get update && \
   build-essential \
   cmake \
   git \
+  libasound2-dev \
   libavformat-dev \
   libcanberra-gtk3-module \
   libgtk-3-dev \
