@@ -61,9 +61,10 @@ class SheepLocalizer:
         image -= self.mean
         return image
 
-    def resize(self, image):
+    def resize(self, image, is_array=True):
         # image = cv2.resize(image, self.input_size, interpolation=cv2.INTER_CUBIC)
-        image = Image.fromarray(image)
+        if is_array:
+            image = Image.fromarray(image)
         image = image.resize(self.input_size, Image.BICUBIC)
         image = np.asarray(image)
         return image
@@ -87,10 +88,10 @@ class SheepLocalizer:
             cv2.putText(image, score_text, text_start, self.font, self.font_scale, (255, 255, 255), bottomLeftOrigin=False)
         return image
 
-    def localize(self, image):
+    def localize(self, image, is_array=True):
         if not self.initialized:
             self.build_model()
-        image = self.resize(image)
+        image = self.resize(image, is_array)
         input_image = self.preprocess(image.copy())
         bboxes, _, scores = self.model.predict([input_image])
 

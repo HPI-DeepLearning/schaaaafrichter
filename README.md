@@ -46,3 +46,7 @@ Unable to init server: Could not connect: Connection refused
 
 (sheeper:1): Gtk-WARNING **: cannot open display: :1
 ```
+
+### with static images
+
+`python image_sheeping.py models/model models/log -j data/generated/test_info.json --gpu 0`
