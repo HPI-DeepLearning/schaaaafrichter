@@ -5,7 +5,8 @@ Now with Advanced AI-Technolgies!
 
 ## Installation
 
-You can build the project with or without support for a CUDA capable GPU. Steps only applicable to either one will be denoted with **With GPU**/**CPU only**.
+You can build the project with or without support for a CUDA capable GPU.
+Steps only applicable to one of them will be denoted (**GPU Support**/**CPU**).
 Also you can either install this [in your own system](#install-on-system), or [use a docker image instead](#install-with-docker).
 
 ### Install on System
@@ -16,7 +17,7 @@ Also you can either install this [in your own system](#install-on-system), or [u
    your favourite package manager
    - Linux: Use your favourite package manager i.e. `pacman -S python` or
    `apt install python3`
-2. **With GPU**:
+2. **GPU Support:**
    - install `CUDA`
    - install `cudnn`
 3. Create a virtualenvironment
@@ -29,8 +30,8 @@ Also you can either install this [in your own system](#install-on-system), or [u
 5. Clone the repository
 6. *For Ubuntu*: Install header files for alsa: `apt install libasound2-dev`
 7. Install all necessary libraries:
-   - **With GPU:** `pip install -r requirements.txt`
-   - **CPU only:** `pip install -r requirements_cpu.txt`
+   - **GPU Support:** `pip install -r requirements.txt`
+   - **CPU:** `pip install -r requirements_cpu.txt`
 
 ### Install with Docker
 
@@ -39,17 +40,17 @@ Also you can either install this [in your own system](#install-on-system), or [u
    - Mac: Get it [here](https://www.docker.com/community-edition)
    - Linux: User your favourite package manager i.e. `pacman -S docker`, or use [this guide](https://docs.docker.com/install/linux/docker-ce/ubuntu/) for Ubuntu.
    or `apt install docker`
-2. **With GPU**: In case your device has a CUDA capable GPU, you should do the following:
+2. **GPU Support:** In case your device has a CUDA capable GPU, you should do the following:
    - install `CUDA`
    - install `cudnn`
    - install `nvidia-docker` ([Ubuntu](https://gist.github.com/dsdenes/d9c66361df96bce3fca8f1414bb14bce),
   [Arch Like OS](https://aur.archlinux.org/packages/nvidia-docker2/))
 3. Build the Docker Image:
-   - **CPU only**:
+   - **CPU:**
    ```
    docker build -t sheep --build-arg FROM_IMAGE=ubuntu:16.04 --build-arg CPU_ONLY=true .
    ```
-   - **With GPU**:
+   - **GPU Support:**
    ```
    docker build -t sheep .
    ```
