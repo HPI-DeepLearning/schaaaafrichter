@@ -64,8 +64,14 @@ RUN wget https://github.com/yuyu2172/share-weights/releases/download/0.0.3/ssd_v
 # Set the working directory to /app
 WORKDIR /app
 
-COPY requirements.txt /app
-RUN pip3 install -v --trusted-host pypi.python.org -r requirements.txt
+COPY requirements.txt requirements_cpu.txt /app/
+ARG CPU_ONLY
+RUN \
+  if [ "x$CPU_ONLY" = "x" ] ; then \
+    pip3 install -v --trusted-host pypi.python.org -r requirements.txt ; \ 
+  else \
+    pip3 install -v --trusted-host pypi.python.org -r requirements_cpu.txt ; \
+  fi
 
 # Copy the current directory contents into the container at /app
 COPY . /app
