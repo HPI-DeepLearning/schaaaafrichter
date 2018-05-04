@@ -89,6 +89,9 @@ class Generator:
             width = x2 - x1
             height = y2 - y1
 
+            if width <= 0 or height <= 0:
+                continue
+
             resized_to_bb = stamps[i].resize((width, height), Image.LANCZOS)
 
             layer = Image.new("RGBA", image.size, (0, 0, 0, 0))
