@@ -194,7 +194,7 @@ def main():
         chainer.backends.cuda.get_device_from_id(args.gpu[0]).use()
         model.to_gpu()
 
-    trainer = training.Trainer(updater, (120000, 'iteration'), args.out)
+    trainer = training.Trainer(updater, (200, 'epoch'), args.out)
 
     trainer.extend(
         DetectionVOCEvaluator(
@@ -228,10 +228,9 @@ def main():
         trigger=log_interval)
     trainer.extend(extensions.ProgressBar(update_interval=10))
 
-    trainer.extend(extensions.snapshot(), trigger=(1000, 'iteration'))
     trainer.extend(
         extensions.snapshot_object(model, 'model_iter_{.updater.iteration}'),
-        trigger=(120000, 'iteration'))
+        trigger=(5000, 'iteration'))
 
     if args.test_image is not None:
         plot_image = train._dataset.load_image(args.test_image, resize_to=image_size)
