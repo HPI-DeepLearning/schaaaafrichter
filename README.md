@@ -98,7 +98,8 @@ nvidia-docker run \
     --rm \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
     -e DISPLAY=$DISPLAY \
-    --device=/dev/video0:/dev/video0 \
+    --device /dev/video0:/dev/video0 \
+    --device /dev/snd \
     -it \
     --volume /absolute/path/to/data:/app/data \
     sheep
@@ -126,6 +127,6 @@ python3 live_sheeping.py data/models/trained_model data/models/log
 ```
 You can also run on a gpu with `--gpu <gpu_id>`.
 
-To generate predictions for static images instead (you can add `--gpu <gpu_id>` again):
+To generate predictions for static images instead (you can add `--gpu <gpu_id>` again, and `--help` for other options):
 
 `python image_sheeping.py data/models/trained_model data/models/log -j data/generated/test_info.json`
