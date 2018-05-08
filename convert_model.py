@@ -1,18 +1,13 @@
 import argparse
-import os
 import numpy as np
 
 
 def main(model_in, model_out):
-    with open(model_in, "rb") as handle:
-        data = np.load(handle)
-
-        prefix = "updater/optimizer:main/model/"
+    with np.load(model_in) as data:
+        prefix = "updater/model:main/model/"
 
         model_keys = filter(lambda x: prefix in x, data.keys())
-
         model_data = {key: data[key] for key in model_keys}
-
         renamed_data = {k.replace(prefix, ""): v for k, v in model_data.items()}
 
         np.savez(model_out, **renamed_data)
