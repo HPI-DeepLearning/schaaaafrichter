@@ -65,14 +65,15 @@ class Generator:
             self.make_image(image, is_test, bboxes, stamps_to_use)
 
     def make_image(self, image, is_test, bounding_boxes=(), stamps=()):
-        scale_factor = self.resize_max / max(image.size)
+        if self.resize_max > 0:
+            scale_factor = self.resize_max / max(image.size)
 
-        new_size = [min(int(round(scale_factor * dim)), self.resize_max) for dim in image.size]
-        image = image.resize(new_size, Image.LANCZOS)
+            new_size = [min(int(round(scale_factor * dim)), self.resize_max) for dim in image.size]
+            image = image.resize(new_size, Image.LANCZOS)
+
+            bounding_boxes = [[int(round(x * scale_factor)) for x in bb] for bb in bounding_boxes]
 
         image_output_path = self.get_next_output_path()
-
-        bounding_boxes = [[int(round(x * scale_factor)) for x in bb] for bb in bounding_boxes]
 
         target_info = self.test_info if is_test else self.train_info
         target_info.append({
@@ -139,10 +140,10 @@ if __name__ == "__main__":
     parser.add_argument("--image-folder", required=True, help="folder with template image files")
     parser.add_argument("--test-stamps", required=True, nargs="+", help="path to search for images to paste")
     parser.add_argument("--train-stamps", required=True, nargs="+", help="path to search for images to paste")
-    parser.add_argument("--ext", default="jpg", help="extension of image files")
     parser.add_argument("--search-path", default=None, help="path to search for corresponding json files")
     parser.add_argument("--output-path", default="data/generated", help="output path directory")
-    parser.add_argument("--split", default=0.2, help="define percentage of images in test data")
-    parser.add_argument("--resize-max", default=500, help="resize the larger image axis to 500 (keeps aspect ratio)")
+    parser.add_argument("--ext", default="jpg", help="extension of image files")
+    parser.add_argument("--split", default=0.2, type=float, help="define percentage of images in test data")
+    parser.add_argument("--resize-max", default=500, type=int, help="resize the larger image axis to 500 (keeps aspect ratio)")
 
     main(parser.parse_args())
