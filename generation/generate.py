@@ -144,6 +144,7 @@ if __name__ == "__main__":
     parser.add_argument("--output-path", default="data/generated", help="output path directory")
     parser.add_argument("--ext", default="jpg", help="extension of image files")
     parser.add_argument("--split", default=0.2, type=float, help="define percentage of images in test data")
-    parser.add_argument("--resize-max", default=500, type=int, help="resize the larger image axis to 500 (keeps aspect ratio)")
+    parser.add_argument("--resize-max", default=500, type=int, help="resize the larger image axis to this value (keeps "
+                                                                    "aspect ratio), set to <= 0 to disable resizing")
 
     main(parser.parse_args())
