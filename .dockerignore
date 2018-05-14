@@ -104,4 +104,5 @@ ENV/
 .idea
 
 # our stuff
+.git
 data
