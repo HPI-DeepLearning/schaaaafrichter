@@ -106,7 +106,7 @@ nvidia-docker run \
 ```
 **Note:** The `--volume` option overwrites the content in the docker image and should be used for developing instead of rebuilding the image when changing code.
 In this option `/absolute/path/to/repository` should be the **absolute** path to the root directory of the repository.
-You can also use: `--volume "$( readlink . -f )":/app/data`, which inserts the absolute path to the current directory, but that does not work on Windows.
+You can also use: `--volume "$( readlink . -f )":/app`, which inserts the absolute path to the current directory, but that does not work on Windows.
 
 **Known errors**
 
