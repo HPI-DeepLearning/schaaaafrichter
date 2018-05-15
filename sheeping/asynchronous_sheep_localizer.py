@@ -31,7 +31,7 @@ class AsynchronousSheepLocalizer(SheepLocalizer):
                 bboxes, scores = self.localize(frame)
                 end_time = time.time()
                 fps = 1.0 / (end_time - start_time)
-                self.image_queue.put((bboxes[0], scores[0], fps))
+                self.image_queue.put((bboxes, scores, fps))
 
         self.localization_process = multiprocessing.Process(target=worker)
         self.localization_process.start()
@@ -49,14 +49,4 @@ class AsynchronousSheepLocalizer(SheepLocalizer):
         self.empty_queue(self.localization_queue)
         self.empty_queue(self.image_queue)
         self.localization_process.join()
-
-    def localize(self, image):
-        if not self.initialized:
-            self.build_model()
-        input_image = self.preprocess(image.copy())
-        bboxes, _, scores = self.model.predict([input_image])
-
-        return bboxes, scores
-
-
 

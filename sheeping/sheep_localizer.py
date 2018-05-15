@@ -55,25 +55,40 @@ class SheepLocalizer:
         self.initialized = True
         self.model = model
 
-    def preprocess(self, image):
+    def resize(self, image, is_array=True):
+        # image = cv2.resize(image, self.input_size, interpolation=cv2.INTER_CUBIC)
+        if is_array:
+            image = Image.fromarray(image)
+        scale_x = image.size[0] / self.input_size[0]
+        scale_y = image.size[1] / self.input_size[1]
+        image = image.resize(self.input_size, Image.BICUBIC)
+        image = np.asarray(image)
+        return image, (scale_x, scale_y)
+
+    def preprocess(self, image, make_copy=True):
+        if make_copy:
+            image = image.copy()
         image = image.transpose(2, 0, 1)
         image = image.astype(np.float32)
         image -= self.mean
         return image
 
-    def resize(self, image, is_array=True):
-        # image = cv2.resize(image, self.input_size, interpolation=cv2.INTER_CUBIC)
-        if is_array:
-            image = Image.fromarray(image)
-        image = image.resize(self.input_size, Image.BICUBIC)
-        image = np.asarray(image)
-        return image
+    def localize(self, processed_image):
+        if not self.initialized:
+            self.build_model()
+        bboxes, _, scores = self.model.predict([processed_image])
 
-    def visualize_results(self, image, bboxes, scores):
+        return bboxes[0], scores[0]
+
+    def visualize_results(self, image, bboxes, scores, scaling=(1, 1)):
         bboxes = bboxes.astype(np.int32)
         for bbox, score in zip(bboxes, scores):
             if len(bbox) != 4:
                 continue
+
+            # scale bounding box with scale factor
+            bbox = [bbox[0] * scaling[1], bbox[1] * scaling[0], bbox[2] * scaling[1], bbox[3] * scaling[0]]
+            bbox = list(map(int, map(round, bbox)))
 
             width = bbox[3] - bbox[1]
             height = bbox[2] - bbox[0]
@@ -88,12 +103,3 @@ class SheepLocalizer:
             cv2.putText(image, score_text, text_start, self.font, self.font_scale, (255, 255, 255), bottomLeftOrigin=False)
         return image
 
-    def localize(self, image, is_array=True):
-        if not self.initialized:
-            self.build_model()
-        image = self.resize(image, is_array)
-        input_image = self.preprocess(image.copy())
-        bboxes, _, scores = self.model.predict([input_image])
-
-        image = self.visualize_results(image, bboxes[0], scores[0])
-        return image
