@@ -75,6 +75,7 @@ RUN \
 
 # Copy the current directory contents into the container at /app
 COPY . /app
+# When developing, you should use a volume instead of rebuilding the image everytime (see Readme)
 
 # Define environment variable
 ENV NAME Schaaafrichter

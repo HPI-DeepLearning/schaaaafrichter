@@ -92,8 +92,8 @@ Execute this on your host, to allow docker to connect to your X server (needs to
 xhost +local:docker
 ```
 
-Run the container and get a command-line:
-```
+Run the container and get a command-line (replace `nvidia-docker` with `docker` if using only CPU):
+```bash
 nvidia-docker run \
     --rm \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
@@ -101,16 +101,16 @@ nvidia-docker run \
     --device /dev/video0:/dev/video0 \
     --device /dev/snd \
     -it \
-    --volume /absolute/path/to/data:/app/data \
+    --volume /absolute/path/to/repository:/app \
     sheep
 ```
-**Note:** `/absolute/path/to/data` id the path to the directory with your trained model and the log file.
-You can also use: `--volume "$( readlink data -f )":/app/data`, but that does not work on Windows.
-
+**Note:** The `--volume` option overwrites the content in the docker image and should be used for developing instead of rebuilding the image when changing code.
+In this option `/absolute/path/to/repository` should be the **absolute** path to the root directory of the repository.
+You can also use: `--volume "$( readlink . -f )":/app`, which inserts the absolute path to the current directory, but that does not work on Windows.
 
 **Known errors**
 
-If you receive an error similar to this one, you need to execute `xhost +local:docker`:
+If you receive the following error, you need to execute `xhost +local:docker` before executing the docker run command ([see comment below this answer](https://stackoverflow.com/a/28395350)):
 ```
 No protocol specified
 Failed to connect to Mir: Failed to connect to server socket: No such file or directory
@@ -118,6 +118,19 @@ Unable to init server: Could not connect: Connection refused
 
 (sheeper:1): Gtk-WARNING **: cannot open display: :1
 ```
+
+If you get the following errors add `--env QT_X11_NO_MITSHM=1` to your docker run command ([source](https://github.com/unetbootin/unetbootin/issues/66)):
+```
+X Error: BadAccess (attempt to access private resource denied) 10
+  Extension:    130 (MIT-SHM)
+  Minor opcode: 1 (X_ShmAttach)
+  Resource id:  0x4200003
+X Error: BadShmSeg (invalid shared segment parameter) 128
+  Extension:    130 (MIT-SHM)
+  Minor opcode: 3 (X_ShmPutImage)
+  Resource id:  0x420000a
+```
+
 
 **Running the script**
 
