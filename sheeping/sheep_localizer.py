@@ -88,12 +88,13 @@ class SheepLocalizer:
 
             # scale bounding box with scale factor
             bbox = [bbox[0] * scaling[1], bbox[1] * scaling[0], bbox[2] * scaling[1], bbox[3] * scaling[0]]
-            bbox = list(map(int, map(round, bbox)))
+            bbox = list(map(lambda x: int(round(x)), bbox))
 
             width = bbox[3] - bbox[1]
             height = bbox[2] - bbox[0]
 
-            cv2.rectangle(image, (bbox[1], bbox[0]), (bbox[1] + width, bbox[0] + height), self.color)
+            thickness = 1 + max(image.shape) // 500
+            cv2.rectangle(image, (bbox[1], bbox[0]), (bbox[1] + width, bbox[0] + height), self.color, thickness)
 
             score_text = format(float(score), ".2f")
             text_size = cv2.getTextSize(score_text, self.font, self.font_scale, 1)[0]
