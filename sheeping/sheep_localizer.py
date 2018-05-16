@@ -93,7 +93,9 @@ class SheepLocalizer:
             width = bbox[3] - bbox[1]
             height = bbox[2] - bbox[0]
 
-            thickness = 1 + max(image.shape) // 500
+            # try to make width of rectangle approximately 0.25% of image size
+            thickness_image_size_ratio = 0.0025
+            thickness = 1 + round(max(image.shape) * thickness_image_size_ratio)
             cv2.rectangle(image, (bbox[1], bbox[0]), (bbox[1] + width, bbox[0] + height), self.color, thickness)
 
             score_text = format(float(score), ".2f")
