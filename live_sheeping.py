@@ -40,9 +40,10 @@ if __name__ == "__main__":
             while True:
                 frame = camera.get_frame()
                 frame = cv2.flip(frame, 1)
-                frame = localizer.resize(frame)
+                processed_frame, scaling = localizer.resize(frame)
+                processed_frame = localizer.preprocess(processed_frame)
                 try:
-                    localizer.localization_queue.put_nowait(frame)
+                    localizer.localization_queue.put_nowait(processed_frame)
                 except queue.Full:
                     pass
 
@@ -54,7 +55,7 @@ if __name__ == "__main__":
                     pass
 
                 if bboxes is not None:
-                    frame = localizer.visualize_results(frame, bboxes, scores)
+                    frame = localizer.visualize_results(frame, bboxes, scores, scaling)
                     frame = print_fps(frame, fps)
 
                 cv2.imshow('sheeper', frame)

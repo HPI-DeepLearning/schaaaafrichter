@@ -1,4 +1,5 @@
 import argparse
+import numpy as np
 import os
 import json
 from tqdm import tqdm
@@ -38,6 +39,10 @@ if __name__ == "__main__":
 
     for image_path in tqdm(images):
         with Image.open(image_path) as image:
-            image = localizer.localize(image, is_array=False)
-            image = Image.fromarray(image)
-            image.save(os.path.join(args.output, os.path.basename(image_path)))
+            image_as_array = np.asarray(image)
+            resized_image, scaling = localizer.resize(image, is_array=False)
+            processed_image = localizer.preprocess(resized_image)
+            bboxes, scores = localizer.localize(processed_image)
+
+            out_image = Image.fromarray(localizer.visualize_results(image_as_array, bboxes, scores, scaling=scaling))
+            out_image.save(os.path.join(args.output, os.path.basename(image_path)))
