@@ -107,7 +107,15 @@ class SheepLocalizer:
             text_start = bbox[1] + width - text_size[0], bbox[0]
             text_end = bbox[1] + width, bbox[0] - text_size[1]
             cv2.rectangle(image, text_start, text_end, self.color, -1)
-            cv2.putText(image, score_text, text_start, self.font, scaling, (255, 255, 255), bottomLeftOrigin=False,
-                        thickness=text_thickness)
+            cv2.putText(
+                image,
+                score_text,
+                text_start,
+                self.font,
+                scaling,
+                (255, 255, 255),
+                bottomLeftOrigin=False,
+                thickness=text_thickness
+            )
         return image
 
