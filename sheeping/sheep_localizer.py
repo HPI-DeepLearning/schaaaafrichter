@@ -100,10 +100,10 @@ class SheepLocalizer:
             thickness = self.thickness_base + round(max(image.shape) * self.thickness_scale)
             cv2.rectangle(image, (bbox[1], bbox[0]), (bbox[1] + width, bbox[0] + height), self.color, thickness)
 
-            scaling = self.font_size_base + round(max(image.shape) * self.font_scale)
+            font_scaling = self.font_size_base + round(max(image.shape) * self.font_scale)
             text_thickness = round(self.font_thickness_factor * thickness)
             score_text = format(float(score), ".2f")
-            text_size = cv2.getTextSize(score_text, self.font, scaling, text_thickness)[0]
+            text_size = cv2.getTextSize(score_text, self.font, font_scaling, text_thickness)[0]
             text_start = bbox[1] + width - text_size[0], bbox[0]
             text_end = bbox[1] + width, bbox[0] - text_size[1]
             cv2.rectangle(image, text_start, text_end, self.color, -1)
@@ -112,7 +112,7 @@ class SheepLocalizer:
                 score_text,
                 text_start,
                 self.font,
-                scaling,
+                font_scaling,
                 (255, 255, 255),
                 bottomLeftOrigin=False,
                 thickness=text_thickness
