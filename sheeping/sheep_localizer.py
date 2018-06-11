@@ -40,14 +40,21 @@ class SheepLocalizer:
             self.model.score_thresh = value
 
     def build_model(self):
-        # TODO: determine the correct model type
-        model = "correct_model"
+        if self.model_type == 'ssd300':
+            model = SSD300(n_fg_class=1)
+        elif self.model_type == 'ssd512':
+            model = SSD512(n_fg_class=1)
+        else:
+            raise NotImplementedError("Sheep Localizer is not prepared to work with model {}".format(self.model_type))
 
         model.score_thresh = self._score_threshold
 
-        # TODO: transfer to GPU if necessary
+        if self.gpu_id >= 0:
+            chainer.backends.cuda.get_device_from_id(self.gpu_id).use()
+            model.to_gpu()
 
-        # TODO: load weights
+        with np.load(self.model_file) as f:
+            chainer.serializers.NpzDeserializer(f).load(model)
 
         self.initialized = True
         self.model = model
@@ -55,30 +62,24 @@ class SheepLocalizer:
     def resize(self, image, is_array=True):
         if is_array:
             image = Image.fromarray(image)
-
-        # TODO: calculate corresponding scaling factor for x and y (used for scaling back to original size)
-        scale_x = 1.0
-        scale_y = 1.0
-
-        # TODO: resize to self.input_size (hint: pay attention to resize algorithm)
-
+        scale_x = image.size[0] / self.input_size[0]
+        scale_y = image.size[1] / self.input_size[1]
+        image = image.resize(self.input_size, Image.BICUBIC)
         image = np.asarray(image)
         return image, (scale_x, scale_y)
 
     def preprocess(self, image, make_copy=True):
         if make_copy:
             image = image.copy()
-        # TODO: reorder channels to the CHW format
-        # TODO: convert to the correct dtype (float32)
-        # TODO: subtract mean (hint: mean is saved in this class)
+        image = image.transpose(2, 0, 1)
+        image = image.astype(np.float32)
+        image -= self.mean
         return image
 
     def localize(self, processed_image):
         if not self.initialized:
             self.build_model()
-        # TODO: get bounding boxes and scores
-        bboxes = [[0, 0, 100, 100]]
-        scores = [[0.9]]
+        bboxes, _, scores = self.model.predict([processed_image])
 
         return bboxes[0], scores[0]
 
@@ -88,10 +89,32 @@ class SheepLocalizer:
             if len(bbox) != 4:
                 continue
 
-            # TODO: scale bounding box with scale factor (see resize function)
-            # HINT: the y axis comes first in bounding boxes, order is [top(y), left(x), bottom(y), right(x)]
+            # scale bounding box with scale factor
+            bbox = [bbox[0] * scaling[1], bbox[1] * scaling[0], bbox[2] * scaling[1], bbox[3] * scaling[0]]
+            bbox = list(map(lambda x: int(round(x)), bbox))
 
-            # TODO: visualize the found item with a rectangle and render the score as text
+            width = bbox[3] - bbox[1]
+            height = bbox[2] - bbox[0]
 
+            thickness = self.thickness_base + round(max(image.shape) * self.thickness_scale)
+            cv2.rectangle(image, (bbox[1], bbox[0]), (bbox[1] + width, bbox[0] + height), self.color, thickness)
+
+            font_scaling = self.font_size_base + round(max(image.shape) * self.font_scale)
+            text_thickness = round(self.font_thickness_factor * thickness)
+            score_text = format(float(score), ".2f")
+            text_size = cv2.getTextSize(score_text, self.font, font_scaling, text_thickness)[0]
+            text_start = bbox[1] + width - text_size[0], bbox[0]
+            text_end = bbox[1] + width, bbox[0] - text_size[1]
+            cv2.rectangle(image, text_start, text_end, self.color, -1)
+            cv2.putText(
+                image,
+                score_text,
+                text_start,
+                self.font,
+                font_scaling,
+                (255, 255, 255),
+                bottomLeftOrigin=False,
+                thickness=text_thickness
+            )
         return image
 
