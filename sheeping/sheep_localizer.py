@@ -79,9 +79,7 @@ class SheepLocalizer:
     def localize(self, processed_image):
         if not self.initialized:
             self.build_model()
-        # TODO: get bounding boxes and scores
-        bboxes = [[0, 0, 100, 100]]
-        scores = [[0.9]]
+        bboxes, _, scores = self.model.predict([processed_image])
 
         return bboxes[0], scores[0]
 
