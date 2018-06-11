@@ -75,9 +75,9 @@ class SheepLocalizer:
     def preprocess(self, image, make_copy=True):
         if make_copy:
             image = image.copy()
-        # TODO: reorder channels to the CHW format
-        # TODO: convert to the correct dtype (float32)
-        # TODO: subtract mean (hint: mean is saved in this class)
+        image = image.transpose(2, 0, 1)
+        image = image.astype(np.float32)
+        image -= self.mean
         return image
 
     def localize(self, processed_image):
