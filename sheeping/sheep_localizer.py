@@ -40,14 +40,21 @@ class SheepLocalizer:
             self.model.score_thresh = value
 
     def build_model(self):
-        # TODO: determine the correct model type
-        model = "correct_model"
+        if self.model_type == 'ssd300':
+            model = SSD300(n_fg_class=1)
+        elif self.model_type == 'ssd512':
+            model = SSD512(n_fg_class=1)
+        else:
+            raise NotImplementedError("Sheep Localizer is not prepared to work with model {}".format(self.model_type))
 
         model.score_thresh = self._score_threshold
 
-        # TODO: transfer to GPU if necessary
+        if self.gpu_id >= 0:
+            chainer.backends.cuda.get_device_from_id(self.gpu_id).use()
+            model.to_gpu()
 
-        # TODO: load weights
+        with np.load(self.model_file) as f:
+            chainer.serializers.NpzDeserializer(f).load(model)
 
         self.initialized = True
         self.model = model
