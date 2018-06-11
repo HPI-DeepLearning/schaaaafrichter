@@ -62,13 +62,9 @@ class SheepLocalizer:
     def resize(self, image, is_array=True):
         if is_array:
             image = Image.fromarray(image)
-
-        # TODO: calculate corresponding scaling factor for x and y (used for scaling back to original size)
-        scale_x = 1.0
-        scale_y = 1.0
-
-        # TODO: resize to self.input_size (hint: pay attention to resize algorithm)
-
+        scale_x = image.size[0] / self.input_size[0]
+        scale_y = image.size[1] / self.input_size[1]
+        image = image.resize(self.input_size, Image.BICUBIC)
         image = np.asarray(image)
         return image, (scale_x, scale_y)
 
