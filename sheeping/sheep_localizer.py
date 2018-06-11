@@ -89,10 +89,32 @@ class SheepLocalizer:
             if len(bbox) != 4:
                 continue
 
-            # TODO: scale bounding box with scale factor (see resize function)
-            # HINT: the y axis comes first in bounding boxes, order is [top(y), left(x), bottom(y), right(x)]
+            # scale bounding box with scale factor
+            bbox = [bbox[0] * scaling[1], bbox[1] * scaling[0], bbox[2] * scaling[1], bbox[3] * scaling[0]]
+            bbox = list(map(lambda x: int(round(x)), bbox))
 
-            # TODO: visualize the found item with a rectangle and render the score as text
+            width = bbox[3] - bbox[1]
+            height = bbox[2] - bbox[0]
 
+            thickness = self.thickness_base + round(max(image.shape) * self.thickness_scale)
+            cv2.rectangle(image, (bbox[1], bbox[0]), (bbox[1] + width, bbox[0] + height), self.color, thickness)
+
+            font_scaling = self.font_size_base + round(max(image.shape) * self.font_scale)
+            text_thickness = round(self.font_thickness_factor * thickness)
+            score_text = format(float(score), ".2f")
+            text_size = cv2.getTextSize(score_text, self.font, font_scaling, text_thickness)[0]
+            text_start = bbox[1] + width - text_size[0], bbox[0]
+            text_end = bbox[1] + width, bbox[0] - text_size[1]
+            cv2.rectangle(image, text_start, text_end, self.color, -1)
+            cv2.putText(
+                image,
+                score_text,
+                text_start,
+                self.font,
+                font_scaling,
+                (255, 255, 255),
+                bottomLeftOrigin=False,
+                thickness=text_thickness
+            )
         return image
 
